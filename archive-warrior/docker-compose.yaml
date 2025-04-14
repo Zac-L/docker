@@ -1,0 +1,35 @@
+services:
+  watchtower:
+    image: containrrr/watchtower
+    restart: on-failure
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # These are passed as command-line arguments to the container
+    command:
+      - --label-enable
+      - --include-restarting
+      - --cleanup
+      - --interval
+      - "3600"
+
+  archiveteam-warrior1:
+    image: atdr.meo.ws/archiveteam/warrior-dockerfile
+    restart: on-failure
+    # The ports are specified this way to avoid collisions. As defined, there are 999 available.
+    ports:
+      - "8001-9000:8001"
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+    environment:
+      DOWNLOADER: <user_name>
+      SELECTED_PROJECT: "usgovernment"
+      CONCURRENT_ITEMS: 5
+    deploy:
+      mode: replicated
+      # This will spin up however many warrior replicas you specify
+      replicas: 2
+      endpoint_mode: vip
